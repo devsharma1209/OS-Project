@@ -6,7 +6,8 @@ OS Project - Process Scheduler
 - compare your simulated results with real Linux processes
 
 
-
+---
+/n
 
 things to do rn:
 1. update the table to get other details like TAT, Rspeonce time, WT ect. + Add Performance Metricsl like CPU Utilization (%) Throughput (processes per unit time) Context Switch Count (for Round Robin) ect.
