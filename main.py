@@ -1,10 +1,13 @@
 from algorithms import (
     fcfs,
     sjf,
-    srjf,
+    srtf,
     round_robin,
-    priority_scheduling
+    priority_scheduling,
+    cfs,
+    mlfq
 )
+
 from linux_fetch import fetch_linux_processes
 from utils import print_table
 from gantt import plot_gantt
@@ -37,3 +40,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
