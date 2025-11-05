@@ -116,10 +116,11 @@ def srtf(processes):
         # Add arrived processes to ready queue
         while processes and processes[0]["arrival"] <= time:
             p = processes.pop(0)
-            heapq.heappush(ready, (remaining[p["pid"]], p))
+            # add tie-breaker (pid) to avoid TypeError
+            heapq.heappush(ready, (remaining[p["pid"]], p["pid"], p))
 
         if ready:
-            rem, p = heapq.heappop(ready)
+            rem, pid, p = heapq.heappop(ready)
             if p["pid"] not in start_times:
                 start_times[p["pid"]] = time
             remaining[p["pid"]] -= 1
@@ -130,7 +131,7 @@ def srtf(processes):
                 turnaround_times[p["pid"]] = finish_times[p["pid"]] - p["arrival"]
                 waiting_times[p["pid"]] = turnaround_times[p["pid"]] - p["burst"]
             else:
-                heapq.heappush(ready, (remaining[p["pid"]], p))
+                heapq.heappush(ready, (remaining[p["pid"]], p["pid"], p))
         else:
             time += 1
 
@@ -239,3 +240,4 @@ def mlfq(processes, queues=3, base_quantum=2):
             time += 1
 
     return results
+
