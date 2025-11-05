@@ -36,8 +36,12 @@ def main():
     run_scheduler("SRJF (Preemptive SJF)", srjf, processes)
     run_scheduler("Round Robin", round_robin, processes, quantum=2)
     run_scheduler("Priority Scheduling", priority_scheduling, processes)
+    run_scheduler("Completely Fair Scheduler (CFS)", cfs, processes)
+    run_scheduler("Multilevel Feedback Queue (MLFQ)", mlfq, processes)
+
 
 
 if __name__ == "__main__":
     main()
+
 
