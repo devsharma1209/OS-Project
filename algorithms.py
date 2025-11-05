@@ -159,18 +159,22 @@ def cfs(processes, time_slice=2):
     remaining = {p["pid"]: p["burst"] for p in processes}
     finished = set()
 
-    while len(finished) < len(processes):
+    while len(finished) < len(remaining):
         # Add new arrivals
         while processes and processes[0]["arrival"] <= time:
-            heapq.heappush(ready, (0, processes.pop(0)))  # vruntime, process
+            p = processes.pop(0)
+            # add tie-breaker (pid)
+            heapq.heappush(ready, (0, p["pid"], p))
 
         if ready:
-            vr, p = heapq.heappop(ready)
+            vr, pid, p = heapq.heappop(ready)
             exec_time = min(time_slice, remaining[p["pid"]])
             start = time
             time += exec_time
             remaining[p["pid"]] -= exec_time
-            p["vruntime"] += exec_time / (p.get("priority", 1))  # lower priority = slower vruntime
+            # Update vruntime — lower priority increases vruntime faster
+            p["vruntime"] += exec_time / (p.get("priority", 1))
+
             if remaining[p["pid"]] <= 0:
                 finished.add(p["pid"])
                 finish = time
@@ -184,7 +188,7 @@ def cfs(processes, time_slice=2):
                     "turnaround": turnaround
                 })
             else:
-                heapq.heappush(ready, (p["vruntime"], p))
+                heapq.heappush(ready, (p["vruntime"], p["pid"], p))
         else:
             time += 1
 
@@ -192,7 +196,7 @@ def cfs(processes, time_slice=2):
 
 
 def mlfq(processes, queues=3, base_quantum=2):
-    """Multilevel Feedback Queue Scheduling"""
+    """Multilevel Feedback Queue Scheduling (simplified)"""
     from collections import deque
     processes = sorted(processes, key=lambda x: x["arrival"])
     time = 0
@@ -216,20 +220,20 @@ def mlfq(processes, queues=3, base_quantum=2):
                 time += exec_time
                 remaining[p["pid"]] -= exec_time
                 executed = True
+
+                # Record this execution slice
+                results.append({
+                    "pid": p["pid"],
+                    "start": start,
+                    "finish": time,
+                    "waiting": time - p["arrival"] - (p["burst"] - remaining[p["pid"]]),
+                    "turnaround": time - p["arrival"]
+                })
+
                 if remaining[p["pid"]] <= 0:
                     finished.add(p["pid"])
-                    finish = time
-                    turnaround = finish - p["arrival"]
-                    waiting = turnaround - p["burst"]
-                    results.append({
-                        "pid": p["pid"],
-                        "start": start,
-                        "finish": finish,
-                        "waiting": waiting,
-                        "turnaround": turnaround
-                    })
                 else:
-                    # Demote to next queue
+                    # Demote to next lower queue or stay in last queue
                     if i + 1 < queues:
                         ready_queues[i + 1].append(p)
                     else:
@@ -240,4 +244,3 @@ def mlfq(processes, queues=3, base_quantum=2):
             time += 1
 
     return results
-
