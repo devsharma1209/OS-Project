@@ -13,14 +13,40 @@ def fetch_linux_processes(top_n=5):
         parts = line.split()
         if len(parts) < 5:
             continue
+        pid = int(parts[0])
+        name = parts[1][:15].lower()
+        pri_kernel = int(parts[2])
+        etimes = int(parts[3])
+
         processes.append({
-            "pid": int(parts[0]),
-            "name": parts[1],
-            "priority": max(1, 140 - int(parts[2])),  # invert PRI so higher = better
-            "burst": max(1, int(parts[3]) // 10),     # rough burst estimate
-            "arrival": random.randint(0, 5 * i)       # simulated arrival
+            "pid": pid,
+            "name": name,
+            # Convert Linux PRI into a "scheduler priority": smaller is better.
+            # Here we invert around 140 to make typical user processes near ~20–40.
+            "priority": max(1, 140 - pri_kernel),
+            # crude exec time proxy: elapsed/10 but at least 1
+            "burst": max(1, etimes // 10),
+            # stagger arrivals a bit for interesting schedules
+            "arrival": random.randint(0, 5 * i)
         })
     return processes
 
 
+# ---- Optional "mini task manager" helpers ----
 
+def kill_process(pid: int) -> bool:
+    """Try to kill a process by pid. Returns True if the signal was sent."""
+    try:
+        subprocess.check_call(["kill", "-9", str(pid)])
+        return True
+    except Exception:
+        return False
+
+
+def renice_process(pid: int, nice: int) -> bool:
+    """Change process priority (nice value). Lower nice = higher priority."""
+    try:
+        subprocess.check_call(["renice", str(nice), "-p", str(pid)])
+        return True
+    except Exception:
+        return False
