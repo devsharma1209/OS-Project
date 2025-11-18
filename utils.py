@@ -107,18 +107,17 @@ def aggregate_metrics(timeline, processes):
 
 
 def print_table(timeline, processes):
-    """
-    Print detailed per-process metrics and global performance metrics.
-    Returns (per_proc_metrics, global_metrics).
-    """
     per_proc, globals_ = aggregate_metrics(timeline, processes)
 
     if not per_proc:
         print("⚠️  No process data to display")
         return per_proc, globals_
 
+    # Custom order
     cols = ["pid", "arrival", "burst", "start", "finish", "response", "waiting", "turnaround"]
-    print(tabulate(per_proc, headers=cols, tablefmt="fancy_grid"))
+    rows = [[p[c] for c in cols] for p in per_proc]
+
+    print(tabulate(rows, headers=cols, tablefmt="fancy_grid"))
 
     print("\n" + "="*50)
     print("  PERFORMANCE METRICS")
@@ -164,6 +163,7 @@ def print_table(timeline, processes):
     return per_proc, globals_
 
 
+
 # ---------- Starvation detection ----------
 
 def detect_starvation(per_proc_metrics, threshold: int = 20):
@@ -176,3 +176,4 @@ def detect_starvation(per_proc_metrics, threshold: int = 20):
         if row["waiting"] > threshold:
             starving.append(row["pid"])
     return starving
+
