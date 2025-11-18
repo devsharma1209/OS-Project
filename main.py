@@ -5,20 +5,24 @@ from algorithms import (
 )
 from linux_fetch import fetch_linux_processes
 from utils import print_table
-from gantt import plot_gantt
 
 
 def run_scheduler(name, func, processes, **kwargs):
     print(f"\nRunning {name} Scheduler...")
-    results = func(processes, **kwargs) if kwargs else func(processes)
-    print_table(results)
-    plot_gantt(results, f"{name} Gantt Chart", filename=f"{name.lower().replace(' ', '_')}_gantt.png")
-    return results
+
+    # Run the algorithm
+    timeline = func(processes, **kwargs) if kwargs else func(processes)
+
+    # Print full metrics table (requires timeline + processes)
+    per_proc, globals_ = print_table(timeline, processes)
+
+    return timeline, per_proc, globals_
 
 
 def main():
     print("Fetching Linux processes...")
     processes = fetch_linux_processes(top_n=5)
+
     print("\nFetched Processes:")
     for p in processes:
         print(p)
@@ -34,11 +38,18 @@ def main():
     ]
 
     summary = []
+
     for name, func, params in schedulers:
-        results = run_scheduler(name, func, processes, **params)
-        avg_wait = sum(r["waiting"] for r in results) / len(results)
-        avg_turnaround = sum(r["turnaround"] for r in results) / len(results)
-        summary.append({"Scheduler": name, "Avg Wait": avg_wait, "Avg Turnaround": avg_turnaround})
+        timeline, per_proc, globals_ = run_scheduler(name, func, processes, **params)
+
+        summary.append({
+            "Scheduler": name,
+            "Avg Waiting Time": globals_["Avg Waiting Time"],
+            "Avg Turnaround Time": globals_["Avg Turnaround Time"],
+            "Avg Response Time": globals_["Avg Response Time"],
+            "CPU Util (%)": globals_["CPU Utilization (%)"],
+            "Context Switches": globals_["Context Switches"],
+        })
 
     print("\n=== Scheduler Comparison Summary ===")
     from tabulate import tabulate
