@@ -10,39 +10,29 @@ OS Project - Process Scheduler
 
 
 things to do rn:
-1. update the table to get other details like TAT, Rspeonce time, WT ect. + Add Performance Metricsl like CPU Utilization (%) Throughput (processes per unit time) Context Switch Count (for Round Robin) ect.~~
-2. ~~add Shedulers like SJF, SRJF ect. + see any important or industry standard schedulers
-3. ~~generate gantt charts for all the schedulers~~
-4. Better visulization - see how can i imporve the img of the gantt charts
-5. Adv. - Implement ML to tell which is the best schedulers for the given workload
-6. Document the entire process + create the ReadMe.md file
-7. Gantt Chart Comparison Panel -  Show algorithms’ Gantt charts side by side + Highlight differences with colors and labels
-8. Opt.  - Add Process Starvation Detector and then automatically apply aging mechanism
-9. Opt. -  Mini Linux Task Manager (with Kill, Priority & Graphs)
-10. 
+1. Stop using Linux processes — they destroy your entire experiment -  Can't tell if what im doing rn is correct or not
+    Stop using fetch_linux_processes() for experiments.
+    Replace it with proper, handcrafted scheduling test sets.
 
+2. Create multiple benchmark datasets
+  You need at least 4–6 workloads, each designed to reveal specific scheduler behavior.
+  Dataset A – Basic small example
+      5–6 processes
+      Staggered arrivals
+      Mixed bursts
+      This shows classic FCFS/SJF behavior.
+  Dataset B – Convoy effect
+      One long job + many short jobs.
+      This highlights SJF vs FCFS differences.
+  Dataset C – Heavy preemption test
+      Lots of short processes arriving frequently.
+      Shows how RR, SRTF, MLFQ behave.
+  Dataset D – Priority starvation scenario
+      Processes with very different priorities to test aging.
+      Dataset E – I/O-intensive workload
 
-Phase 1 (Core Improvements):
-
-├── #1: Add Response Time + Context Switches
-
-├── #4: Improve Gantt chart aesthetics
-
-└── #6: Write basic README
-
-
-
-Phase 2 (Advanced Features):
-
-├── #7: Multi-chart comparison view
-
-└── #1: Add statistical metrics (distribution)
-
-
-Phase 3 (Optional Enhancements):
-
-├── #5: ML recommendation system
-
-├── #8: Starvation detector
-
-└── #9: Task manager GUI
+  
+  Use short bursts and frequent arrivals.
+  
+  You run all schedulers on all datasets.
+  Then your results become meaningful.
