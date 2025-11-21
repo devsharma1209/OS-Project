@@ -1,0 +1,10 @@
+{
+  "name": "Dataset B - Convoy Effect",
+  "processes": [
+    { "pid": 1, "arrival": 0, "burst": 100, "priority": 3 },
+    { "pid": 2, "arrival": 1, "burst": 2,   "priority": 1 },
+    { "pid": 3, "arrival": 2, "burst": 2,   "priority": 1 },
+    { "pid": 4, "arrival": 3, "burst": 2,   "priority": 1 },
+    { "pid": 5, "arrival": 4, "burst": 2,   "priority": 1 }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "name": "Live Snapshot",
+  "processes": [
+    {
+      "pid": 1000,
+      "name": "mock_proc_0",
+      "arrival": 0,
+      "burst": 3,
+      "priority": 37,
+      "elapsed": 39
+    },
+    {
+      "pid": 1001,
+      "name": "mock_proc_1",
+      "arrival": 0,
+      "burst": 14,
+      "priority": 7,
+      "elapsed": 32
+    },
+    {
+      "pid": 1002,
+      "name": "mock_proc_2",
+      "arrival": 0,
+      "burst": 14,
+      "priority": 38,
+      "elapsed": 36
+    },
+    {
+      "pid": 1003,
+      "name": "mock_proc_3",
+      "arrival": 0,
+      "burst": 14,
+      "priority": 28,
+      "elapsed": 39
+    },
+    {
+      "pid": 1004,
+      "name": "mock_proc_4",
+      "arrival": 0,
+      "burst": 7,
+      "priority": 30,
+      "elapsed": 7
+    },
+    {
+      "pid": 1005,
+      "name": "mock_proc_5",
+      "arrival": 0,
+      "burst": 1,
+      "priority": 33,
+      "elapsed": 8
+    },
+    {
+      "pid": 1006,
+      "name": "mock_proc_6",
+      "arrival": 0,
+      "burst": 1,
+      "priority": 5,
+      "elapsed": 40
+    },
+    {
+      "pid": 1007,
+      "name": "mock_proc_7",
+      "arrival": 0,
+      "burst": 14,
+      "priority": 35,
+      "elapsed": 23
+    },
+    {
+      "pid": 1008,
+      "name": "mock_proc_8",
+      "arrival": 0,
+      "burst": 17,
+      "priority": 17,
+      "elapsed": 65
+    },
+    {
+      "pid": 1009,
+      "name": "mock_proc_9",
+      "arrival": 0,
+      "burst": 13,
+      "priority": 26,
+      "elapsed": 15
+    }
+  ]
+}
