@@ -1,152 +1,157 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-"""
-Main runner for the CPU Scheduling Simulator.
-
-Pipeline:
-1) Fetches top-N Linux processes (pid, name, priority, burst, arrival).
-2) Runs multiple scheduling algorithms on the same (deep-copied) input set.
-3) Prints per-process + global metrics (avg WT/TAT/RT, CPU util, throughput, ctx switches, etc.).
-4) Saves high-quality Gantt charts for each algorithm.
-5) Saves a comparison panel to visually compare algorithms.
-6) (Optional) Detects starvation and demonstrates aging for Priority Scheduling.
-
-Requirements:
-    pip install matplotlib tabulate numpy
-"""
-
-from copy import deepcopy
-
-# NOTE: module name is 'algorithm.py', so import from 'algorithm'
-from algorithm import (
-    fcfs, sjf, srtf,
-    round_robin, priority_scheduling,
-    cfs, mlfq,
-    priority_scheduling_with_aging
-)
+import argparse
+import json
+import os
+import time  # <--- Added for timing
+from algorithms import fcfs, sjf, srtf, round_robin, priority_sched, cfs_simplified
+from utils import aggregate_metrics, print_metrics
+from gantt import plot_gantt_grid
 from linux_fetch import fetch_linux_processes
-from utils import print_table, detect_starvation
-from gantt import plot_gantt, plot_gantt_grid
 
-from tabulate import tabulate
+SCHEDULERS = {
+    "FCFS": fcfs,
+    "SJF (Non-Preemptive)": sjf,
+    "SRTF (Preemptive)": srtf,
+    "RR (Quantum=2)": round_robin,
+    "Priority": priority_sched,
+    "CFS (Simplified)": cfs_simplified
+}
 
+# --- Helper Class for Saving Output ---
+class DualLogger:
+    """Prints to console and appends to a file simultaneously."""
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.file = open(filepath, "w", encoding="utf-8")
+    
+    def log(self, message=""):
+        print(message)
+        self.file.write(message + "\n")
+        
+    def close(self):
+        self.file.close()
+        print(f"\n[System] 💾 Report saved to: {self.filepath}")
 
-def _deepcopy_processes(processes):
-    return [dict(p) for p in processes]
+def load_workload(filename):
+    path = os.path.join("workloads", filename)
+    if not os.path.exists(path):
+        print(f"❌ Error: File {path} not found.")
+        return []
+    with open(path, 'r') as f:
+        return json.load(f)['processes']
 
+def check_starvation(metrics, threshold=20):
+    starved = [p for p in metrics if p['waiting'] > threshold]
+    if starved:
+        print(f"\n⚠️  STARVATION DETECTED (Wait > {threshold}s):")
+        for p in starved:
+            print(f"   - PID {p['pid']} waited {p['waiting']:.2f}s")
 
-def run_scheduler(name, func, base_processes, gantt_labels=True, **kwargs):
-    """
-    Run a scheduler on a fresh copy, print metrics, draw & save a Gantt chart,
-    and return (timeline, metrics).
-    """
-    print(f"\n================ {name} ================")
-    procs = _deepcopy_processes(base_processes)
+def run_scientific(filename):
+    print(f"\n🔬 RUNNING SCIENTIFIC MODE: {filename}")
+    processes = load_workload(filename)
+    if not processes: return
+    
+    results_store = {}
+    
+    for name, func in SCHEDULERS.items():
+        print(f"\n--- Scheduler: {name} ---")
+        proc_copy = [p.copy() for p in processes] 
+        
+        # Timing the algorithm
+        start_t = time.perf_counter()
+        timeline = func(proc_copy)
+        end_t = time.perf_counter()
+        runtime_ms = (end_t - start_t) * 1000
+        
+        results, metrics = aggregate_metrics(timeline, proc_copy)
+        print_metrics(results, metrics)
+        print(f"⏱️  Simulation Runtime: {runtime_ms:.4f} ms") # <--- Timing Log
+        
+        check_starvation(results, threshold=15)
+        
+        label = f"{name} (Avg TAT: {metrics['Avg Turnaround Time']:.2f})"
+        results_store[label] = timeline
+        
+    output_file = os.path.basename(filename).replace('.json', '.png')
+    plot_gantt_grid(results_store, output_file)
 
-    # Execute algorithm
-    results = func(procs, **kwargs) if kwargs else func(procs)
+def run_live():
+    # Ensure directories exist
+    if not os.path.exists("results"): os.makedirs("results")
+    if not os.path.exists("workloads"): os.makedirs("workloads")
 
-    # Print per-process and global performance metrics
-    per_proc, metrics = print_table(results, procs)
+    # Initialize Logger
+    logger = DualLogger("results/live_mode_report.txt")
 
-    # Save a high quality single Gantt chart for this algorithm
-    out_file = f"{name.lower().replace(' ', '_').replace('(', '').replace(')', '').replace('-', '')}_gantt.png"
-    plot_gantt(
-        results,
-        title=f"{name} — Gantt Chart",
-        filename=out_file,
-        processes=procs,
-        show_labels=gantt_labels
-    )
-    print(f"🖼️  Saved Gantt: {out_file}")
-
-    return results, metrics, per_proc
-
-
-def main():
-    print("Fetching Linux processes...")
-    processes = fetch_linux_processes(top_n=5)
-
-    if not processes:
-        print("No processes fetched. Exiting.")
+    logger.log("\n🐧 RUNNING LINUX LIVE MODE")
+    logger.log("-------------------------------------------------------")
+    logger.log("NOTE: This is a simplified simulation.")
+    logger.log("Real Linux processes have I/O blocking and variable arrival.")
+    logger.log("We assume Arrival=0 and Burst=Active_CPU_Time for comparison.")
+    logger.log("-------------------------------------------------------\n")
+    
+    processes = fetch_linux_processes(top_n=10)
+    if not processes: 
+        logger.close()
         return
+        
+    logger.log(f"Captured {len(processes)} active processes from System.")
 
-    # Normalize defaults and print fetched set
-    print("\nFetched Processes (normalized):")
+    # --- BONUS: Save Snapshot as JSON ---
+    snapshot_path = "workloads/live_snapshot.json"
+    with open(snapshot_path, "w") as f:
+        json.dump({"name": "Live Snapshot", "processes": processes}, f, indent=2)
+    logger.log(f"[System] 📸 Snapshot saved to: {snapshot_path}")
+    
+    # 1. Reality Check
+    logger.log("\n=== 📊 REALITY CHECK (Simulated vs Actual Wait) ===")
+    logger.log(f"{'PID':<8} | {'Name':<15} | {'Sim Wait (RR)':<15} | {'Actual Wait':<15} | {'Diff'}")
+    logger.log("-" * 75)
+    
+    proc_copy = [p.copy() for p in processes]
+    timeline = round_robin(proc_copy)
+    rr_res, _ = aggregate_metrics(timeline, proc_copy)
+    rr_map = {r['pid']: r['waiting'] for r in rr_res}
+    
     for p in processes:
-        p.setdefault("priority", 1)
-        print(f"PID: {p['pid']:>5} | "
-              f"Name: {p.get('name', 'unknown'):<15} | "
-              f"Priority: {p['priority']:<3} | "
-              f"Burst: {p['burst']:<3} | "
-              f"Arrival: {p['arrival']:<3}")
+        sim_wait = rr_map.get(p['pid'], 0)
+        actual_wait = max(0, p['elapsed'] - p['burst'])
+        diff = actual_wait - sim_wait
+        logger.log(f"{p['pid']:<8} | {p['name'][:15]:<15} | {sim_wait:>13.2f}s | {actual_wait:>13.2f}s | {diff:>+8.2f}")
 
-    # Define scheduler suite
-    schedulers = [
-        ("FCFS", fcfs, {}),
-        ("SJF (Non-Preemptive)", sjf, {}),
-        ("SRTF (Preemptive SJF)", srtf, {}),
-        ("Round Robin (q=2)", round_robin, {"quantum": 2}),
-        ("Priority Scheduling", priority_scheduling, {}),
-        ("Completely Fair Scheduler (CFS)", cfs, {}),
-        ("Multilevel Feedback Queue (MLFQ)", mlfq, {}),
-    ]
-
-    # Run all schedulers, collect results and metrics
-    all_results = {}
-    summary_rows = []
-
-    for name, func, params in schedulers:
-        results, metrics, per_proc = run_scheduler(name, func, processes, **params)
-        all_results[name] = results
-
-        summary_rows.append({
-            "Scheduler": name,
-            "Avg Wait": f"{metrics['Avg Waiting Time']:.2f}",
-            "Avg Turnaround": f"{metrics['Avg Turnaround Time']:.2f}",
-            "Avg Response": f"{metrics['Avg Response Time']:.2f}",
-            "CPU Util (%)": f"{metrics['CPU Utilization (%)']:.2f}",
-            "Throughput": f"{metrics['Throughput (proc/unit time)']:.3f}",
-            "Ctx Switches": metrics['Context Switches'],
-            "Makespan": f"{metrics['Makespan']:.2f}",
-        })
-
-        # Optional: detect starvation on *priority* schedule and rerun with aging
-        if "Priority" in name:
-            starving = detect_starvation(per_proc, threshold=20)  # tweak as you like
-            if starving:
-                print(f"🚨 Starvation detected for PIDs: {starving}. Re-running with Aging...")
-                aged_name = "Priority Scheduling (Aging)"
-                aged_results, aged_metrics, _ = run_scheduler(
-                    aged_name,
-                    priority_scheduling_with_aging,
-                    processes,
-                    aging_interval=5,
-                    aging_delta=1,
-                )
-                all_results[aged_name] = aged_results
-                summary_rows.append({
-                    "Scheduler": aged_name,
-                    "Avg Wait": f"{aged_metrics['Avg Waiting Time']:.2f}",
-                    "Avg Turnaround": f"{aged_metrics['Avg Turnaround Time']:.2f}",
-                    "Avg Response": f"{aged_metrics['Avg Response Time']:.2f}",
-                    "CPU Util (%)": f"{aged_metrics['CPU Utilization (%)']:.2f}",
-                    "Throughput": f"{aged_metrics['Throughput (proc/unit time)']:.3f}",
-                    "Ctx Switches": aged_metrics['Context Switches'],
-                    "Makespan": f"{aged_metrics['Makespan']:.2f}",
-                })
-
-    # Print comparison table
-    print("\n=== Scheduler Comparison Summary ===")
-    print(tabulate(summary_rows, headers="keys", tablefmt="grid"))
-
-    # Save a comparison panel (side-by-side)
-    compare_file = "gantt_comparison_panel.png"
-    # Turn off labels here to reduce clutter across many panels
-    plot_gantt_grid(all_results, filename=compare_file, show_labels=False)
-    print(f"🖼️  Saved comparison panel: {compare_file}")
-
+    # 2. Recommender
+    logger.log("\n=== 🤖 ALGORITHM RECOMMENDER ===")
+    best_algo = None
+    lowest_tat = float('inf')
+    
+    for name, func in SCHEDULERS.items():
+        proc_copy = [p.copy() for p in processes]
+        
+        # Measure Algorithm Speed
+        start_t = time.perf_counter()
+        timeline = func(proc_copy)
+        end_t = time.perf_counter()
+        runtime = (end_t - start_t) * 1000 # ms
+        
+        _, metrics = aggregate_metrics(timeline, proc_copy)
+        tat = metrics['Avg Turnaround Time']
+        
+        logger.log(f"{name:<25}: Avg TAT = {tat:.2f}s  (Calc Time: {runtime:.3f}ms)")
+        
+        if tat < lowest_tat:
+            lowest_tat = tat
+            best_algo = name
+            
+    logger.log(f"\n✅ RECOMMENDATION: **{best_algo}** handles this snapshot most efficiently.")
+    logger.close()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', choices=['scientific', 'live'], required=True)
+    parser.add_argument('--workload', default='dataset_A_basic.json')
+    args = parser.parse_args()
+    
+    if args.mode == 'scientific':
+        run_scientific(args.workload)
+    elif args.mode == 'live':
+        run_live()
