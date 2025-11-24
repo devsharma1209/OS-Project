@@ -12,23 +12,23 @@ Captured 10 active processes from System.
 === 📊 REALITY CHECK (Simulated vs Actual Wait) ===
 PID      | Name            | Sim Wait (RR)   | Actual Wait     | Diff
 ---------------------------------------------------------------------------
-1000     | mock_proc_0     |         16.00s |         36.00s |   +20.00
-1001     | mock_proc_1     |         72.00s |         18.00s |   -54.00
-1002     | mock_proc_2     |         74.00s |         22.00s |   -52.00
-1003     | mock_proc_3     |         76.00s |         25.00s |   -51.00
-1004     | mock_proc_4     |         47.00s |          0.00s |   -47.00
-1005     | mock_proc_5     |         10.00s |          7.00s |    -3.00
-1006     | mock_proc_6     |         11.00s |         39.00s |   +28.00
-1007     | mock_proc_7     |         78.00s |          9.00s |   -69.00
-1008     | mock_proc_8     |         81.00s |         48.00s |   -33.00
-1009     | mock_proc_9     |         82.00s |          2.00s |   -80.00
+1302     | ps              |          0.00s |          0.00s |    +0.00
+1293     | yes             |         60.00s |         20.00s |   -40.00
+1294     | yes             |         56.00s |         20.00s |   -36.00
+1295     | yes             |         58.00s |         20.00s |   -38.00
+1296     | yes             |         60.00s |         20.00s |   -40.00
+1300     | python3         |          9.00s |          2.00s |    -7.00
+1        | systemd         |         10.00s |        360.00s |  +350.00
+1235     | sshd-session    |         11.00s |        177.00s |  +166.00
+18       | pr/ttyS0        |         12.00s |        360.00s |  +348.00
+13       | kworker/u8:1-ev |         13.00s |        360.00s |  +347.00
 
 === 🤖 ALGORITHM RECOMMENDER ===
-FCFS                     : Avg TAT = 50.60s  (Calc Time: 0.009ms)
-SJF (Non-Preemptive)     : Avg TAT = 38.30s  (Calc Time: 0.033ms)
-SRTF (Preemptive)        : Avg TAT = 38.30s  (Calc Time: 0.133ms)
-RR (Quantum=2)           : Avg TAT = 64.50s  (Calc Time: 0.084ms)
-Priority                 : Avg TAT = 54.80s  (Calc Time: 0.037ms)
-CFS (Simplified)         : Avg TAT = 60.40s  (Calc Time: 0.181ms)
+FCFS                     : Avg TAT = 63.70s  (Calc Time: 0.022ms)
+SJF (Non-Preemptive)     : Avg TAT = 23.30s  (Calc Time: 0.049ms)
+SRTF (Preemptive)        : Avg TAT = 23.30s  (Calc Time: 0.171ms)
+RR (Quantum=2)           : Avg TAT = 37.50s  (Calc Time: 0.090ms)
+Priority                 : Avg TAT = 48.50s  (Calc Time: 0.033ms)
+CFS (Simplified)         : Avg TAT = 34.60s  (Calc Time: 0.257ms)
 
 ✅ RECOMMENDATION: **SJF (Non-Preemptive)** handles this snapshot most efficiently.
