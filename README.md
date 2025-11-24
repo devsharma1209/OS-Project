@@ -1,147 +1,201 @@
 # ⚡ OS Process Scheduler & Linux Integration Toolkit
 
-### Operating Systems & Networking Group Project
+### Operating Systems & Networking Group Project – 2025  
+A hybrid **CPU Scheduling Simulator** + **Linux System Analysis Toolkit** that connects classroom algorithms to real-world Linux behavior.
 
-  
+![Status](https://img.shields.io/badge/Status-Complete-green)
+![Python](https://img.shields.io/badge/Python-3.x-blue)
+![Platform](https://img.shields.io/badge/Platform-Linux%20%2F%20AWS-orange)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
-## 📖 Overview
+---
 
-This project is a hybrid **CPU Scheduling Simulator** and **Linux System Analysis Tool**. It bridges the gap between theoretical OS algorithms and real-world process management.
+# 📖 Overview
 
-It operates in two distinct modes:
+This project implements classical CPU scheduling algorithms and compares them with **actual Linux scheduler behavior (CFS)** using real process snapshots.
 
-1.  **🔬 Scientific Mode:** A deterministic environment to simulate, visualize, and compare classical scheduling algorithms (FCFS, SJF, SRTF, RR, Priority) using controlled JSON workloads.
-2.  **🐧 Live Mode:** A real-time system integrator that fetches active processes from the Linux kernel, analyzes their states, and performs a "Reality Check" comparing theoretical scheduling against the actual Linux CFS (Completely Fair Scheduler).
+It operates in two coordinated modes:
 
------
+### **🔬 Scientific Mode (Simulated CPU Scheduling)**
+Deterministic algorithm testing on controlled JSON workloads.  
+Includes full metrics, starvation detection, and Gantt chart visualization.
 
-## 🚀 Key Features
+### **🐧 Live Mode (Real Linux Integration)**
+Captures live process data from the Linux kernel using `ps`,  
+estimates scheduling states, and runs a “**Reality Check**” comparing:
 
-### 1\. Algorithms Implemented
+- Simulated wait time (from RR)
+- Actual Linux wait time (elapsed - CPU time)
 
-  * **FCFS** (First-Come, First-Served)
-  * **SJF** (Shortest Job First - Non-Preemptive)
-  * **SRTF** (Shortest Remaining Time First - Preemptive)
-  * **Round Robin** (Configurable Time Quantum)
-  * **Priority Scheduling** (Non-Preemptive)
-  * **Linux CFS** (Simplified Simulation)
+---
 
-### 2\. Advanced Analytics
+# 🚀 Features
 
-  * **Live Linux Snapshotting:** Captures `pid`, `burst` (CPU time), and `priority` from real system daemons.
-  * **Reality Check Engine:** Compares **Simulated Wait Time** (CPU Ready Queue) vs. **Actual Linux Wait Time** (Total Blocked/Sleep Time).
-  * **Stress Test Analysis:** visualizes the **Convoy Effect** under high load.
-  * **Starvation Detection:** Automatically flags processes waiting beyond a dynamic threshold.
-  * **Dual Logging:** Outputs analysis to both Console and `results/` text files simultaneously.
+### **Implemented Scheduling Algorithms**
+- FCFS  
+- SJF (Non-Preemptive)  
+- SRTF (Preemptive)  
+- Round Robin (quantum=2)  
+- Priority Scheduling (Non-Preemptive)  
+- CFS (Simplified Model Using Virtual Runtime)
 
------
+### **Advanced System Analysis**
+- Live Linux process capture (pid, CPU time, priority)
+- Real vs simulated wait time comparison
+- Starvation flagging for long-wait processes
+- Convoy Effect demonstration
+- Gantt Chart Visualization (Matplotlib)
+- Dual logging (Console + results/ files)
 
-## 🛠️ Installation
+---
 
-1.  **Clone the Repository:**
+# 🛠 Installation
 
-    ```bash
-    git clone https://github.com/devsharma1209/OS-Project.git
-    cd OS-Project
-    ```
+```bash
+git clone https://github.com/devsharma1209/OS-Project.git
+cd OS-Project
+pip install -r requirements.txt
+```
 
-2.  **Install Dependencies:**
-    This project requires `matplotlib` for Gantt charts and `tabulate` for formatted tables.
+---
 
-    ```bash
-    pip install matplotlib tabulate
-    ```
+# 💻 Usage
 
------
+## **1️⃣ Scientific Mode (Simulations on Static Workloads)**
 
-## 💻 Usage Guide
-
-### Mode 1: Scientific Simulation
-
-Run the simulator on a pre-defined workload to generate Gantt charts and metric tables.
-
+### **Dataset A – Mixed Workload**
 ```bash
 python3 main.py --mode scientific --workload dataset_A_basic.json
 ```
 
-  * **Input:** JSON file in `workloads/`.
-  * **Output:** Console metrics + PNG Gantt chart in `results/`.
+### **Dataset B – Convoy Effect Demonstration**
+```bash
+python3 main.py --mode scientific --workload dataset_B_convoy.json
+```
 
-### Mode 2: Live Linux Analysis
+### **Dataset D – Priority Starvation**
+```bash
+python3 main.py --mode scientific --workload dataset_D_starvation.json
+```
 
-**Note:** *Must be run on a Linux environment (e.g., AWS EC2, Ubuntu) to fetch real process data.*
+---
+
+## **2️⃣ Live Mode (Linux System Analysis)**  
+*Requires Linux: AWS EC2 recommended.*
 
 ```bash
 python3 main.py --mode live
 ```
 
-  * **Action:** Fetches top 10 active processes using `ps -eo`.
-  * **Output:**
-      * Generates a `live_mode_report.txt`.
-      * Saves a snapshot to `workloads/live_snapshot.json`.
-      * Recommends the best algorithm for the current system load.
+Live mode:
 
-### Mode 3: The "Bridge" (Visualizing Live Data)
+- Fetches the top 10 active processes
+- Computes real vs simulated wait time
+- Saves snapshot to `workloads/live_snapshot.json`
+- Generates analysis → `results/live_mode_report.txt`
 
-After running Live Mode, you can visualize the real-world data by feeding the snapshot back into the simulator:
+---
+
+## **3️⃣ Bridge Mode (Replay the Live Snapshot)**  
+Visualize and analyze real Linux processes using algorithms:
 
 ```bash
 python3 main.py --mode scientific --workload live_snapshot.json
 ```
 
-  * **Result:** Generates a Gantt chart of your actual Cloud Server's state.
+---
 
------
+# 🧪 Stress Test: Reproducing the Convoy Effect
 
-## 📊 Sample Results & Analysis
-
-### 1\. The Convoy Effect (Stress Test)
-
-By injecting high-burst CPU processes (`yes > /dev/null`), we observed the failure of FCFS in a live environment.
-
-| Metric | FCFS (Baseline) | SJF (Optimized) | Result |
-| :--- | :--- | :--- | :--- |
-| **Avg Wait Time** | 55.10s | 14.70s | **3.7x Improvement** |
-| **responsiveness** | Frozen | Fluid | SJF prioritizes system daemons |
-
-**Visual Proof:**
-*(Place your `live_snapshot.png` here)*
-
-> *The Gantt chart above shows FCFS (Top) blocking system tasks behind heavy loads, while Round Robin (4th Row) fragments the load to maintain responsiveness.*
-
-### 2\. Reality Check (Simulated vs Actual)
-
-```text
-PID      | Name            | Sim Wait (RR)   | Actual Wait     | Diff
-1        | systemd         | 10.00s          | 360.00s         | +350.00
+1. Run CPU-intensive spam processes:
+```bash
+yes > /dev/null &
+yes > /dev/null &
+yes > /dev/null &
+```
+2. Capture live snapshot:
+```bash
+python3 main.py --mode live
+```
+3. Terminate load:
+```bash
+killall yes
+```
+4. Replay the snapshot:
+```bash
+python3 main.py --mode scientific --workload live_snapshot.json
 ```
 
-**Insight:** The massive difference (+350s) indicates that real OS processes spend the majority of their time in the **Blocked/Waiting State** (waiting for I/O), not the **Ready State** (waiting for CPU).
+---
 
------
+# 📊 Highlighted Results
 
-## 📂 Project Structure
+### **1. Convoy Effect (High Load Scenario)**
 
-```text
+| Metric | FCFS | SJF | Improvement |
+|-------|------|------|-------------|
+| Avg Waiting Time | 55.10s | 14.70s | **3.7× faster** |
+| Responsiveness | Poor | Excellent | SJF avoids convoy blocking |
+
+The Gantt charts (in `results/`) clearly show short processes trapped behind CPU hogs under FCFS.
+
+---
+
+### **2. Reality Check (Live Linux Processes)**
+
+Example:
+
+```
+PID      | Sim Wait | Actual Wait | Diff
+1        | 10.00s   | 360.00s     | +350s
+```
+
+**Insight:**  
+Actual Linux wait time is massive because real processes spend most time in the **Blocked/IO** state — something classical schedulers don't simulate.
+
+---
+
+# 📂 Project Structure
+
+```
 OS-Project/
 │
-├── main.py                # Entry point (CLI Argument Parser)
-├── algorithms.py          # Core Scheduling Logic (FCFS, SJF, RR, etc.)
-├── linux_fetch.py         # Interface to Linux Kernel (subprocess/ps)
-├── utils.py               # Metrics Calculation & Math
-├── gantt.py               # Matplotlib Visualization Engine
+├── main.py                # CLI entry point
+├── algorithms.py          # Scheduling algorithms
+├── linux_fetch.py         # Live Linux process capture
+├── utils.py               # Metrics, calculations, helpers
+├── gantt.py               # Gantt chart visualizer
 │
-├── workloads/             # JSON Datasets
+├── workloads/
 │   ├── dataset_A_basic.json
 │   ├── dataset_B_convoy.json
-│   └── live_snapshot.json # Auto-generated from Live Mode
+│   ├── dataset_D_starvation.json
+│   └── live_snapshot.json   # Auto-generated
 │
-└── results/               # Output Artifacts
-    ├── live_mode_report.txt
-    └── live_snapshot.png
+├── results/
+│   ├── live_mode_report.txt
+│   └── live_snapshot.png
+│
+├── screenshots/
+│   └── aws_run.png
+│
+├── requirements.txt
+└── LICENSE
 ```
 
------
+---
+
+# ⚠️ Notes & Limitations
+
+- True Linux wait time is not exposed to user-space.  
+  This project approximates it as:
+
+  **`actual_wait = elapsed_time - cpu_time`**
+
+- Simplified CFS does not reflect the fully accurate Linux kernel implementation.
+- All arrival times in scientific mode default to 0 unless specified.
+
+---
 
 ## 📜 License
 
