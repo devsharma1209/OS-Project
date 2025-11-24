@@ -36,7 +36,8 @@ def aggregate_metrics(timeline, processes):
         waiting = turnaround - burst
         
         # Avoid negative wait (sanity check for edge cases)
-        if waiting < 0: waiting = 0
+        if waiting < 0:
+            print(f"⚠️  [DEBUG] PID {pid} has NEGATIVE wait: {waiting}. Check Scheduler Logic.")
         
         # Find First Start time for Response Time
         # Filter timeline for this pid, get min start
@@ -84,4 +85,5 @@ def print_metrics(results, global_metrics):
     print(tabulate(rows, headers=headers, tablefmt="simple_grid"))
     print("\nSUMMARY METRICS:")
     for k, v in global_metrics.items():
+
         print(f"{k:<20}: {v:.4f}")
