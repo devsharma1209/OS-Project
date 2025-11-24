@@ -1,7 +1,7 @@
 import argparse
 import json
 import os
-import time  # <--- Added for timing
+import time  
 from algorithms import fcfs, sjf, srtf, round_robin, priority_sched, cfs_simplified
 from utils import aggregate_metrics, print_metrics
 from gantt import plot_gantt_grid
@@ -16,7 +16,7 @@ SCHEDULERS = {
     "CFS (Simplified)": cfs_simplified
 }
 
-# --- Helper Class for Saving Output ---
+# Helper Class for Saving Output 
 class DualLogger:
     """Prints to console and appends to a file simultaneously."""
     def __init__(self, filepath):
@@ -97,7 +97,7 @@ def run_live():
         
     logger.log(f"Captured {len(processes)} active processes from System.")
 
-    # --- BONUS: Save Snapshot as JSON ---
+    # Saving Snapshot as JSON
     snapshot_path = "workloads/live_snapshot.json"
     with open(snapshot_path, "w") as f:
         json.dump({"name": "Live Snapshot", "processes": processes}, f, indent=2)
@@ -154,4 +154,5 @@ if __name__ == "__main__":
     if args.mode == 'scientific':
         run_scientific(args.workload)
     elif args.mode == 'live':
+
         run_live()
