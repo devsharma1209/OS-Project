@@ -1,0 +1,85 @@
+{
+  "name": "Live Snapshot",
+  "processes": [
+    {
+      "pid": 1302,
+      "name": "ps",
+      "arrival": 0,
+      "burst": 1,
+      "priority": 19,
+      "elapsed": 0
+    },
+    {
+      "pid": 1293,
+      "name": "yes",
+      "arrival": 0,
+      "burst": 26,
+      "priority": 19,
+      "elapsed": 46
+    },
+    {
+      "pid": 1294,
+      "name": "yes",
+      "arrival": 0,
+      "burst": 18,
+      "priority": 19,
+      "elapsed": 38
+    },
+    {
+      "pid": 1295,
+      "name": "yes",
+      "arrival": 0,
+      "burst": 18,
+      "priority": 19,
+      "elapsed": 38
+    },
+    {
+      "pid": 1296,
+      "name": "yes",
+      "arrival": 0,
+      "burst": 18,
+      "priority": 19,
+      "elapsed": 38
+    },
+    {
+      "pid": 1300,
+      "name": "python3",
+      "arrival": 0,
+      "burst": 1,
+      "priority": 19,
+      "elapsed": 3
+    },
+    {
+      "pid": 1,
+      "name": "systemd",
+      "arrival": 0,
+      "burst": 1,
+      "priority": 19,
+      "elapsed": 361
+    },
+    {
+      "pid": 1235,
+      "name": "sshd-session",
+      "arrival": 0,
+      "burst": 1,
+      "priority": 19,
+      "elapsed": 178
+    },
+    {
+      "pid": 18,
+      "name": "pr/ttyS0",
+      "arrival": 0,
+      "burst": 1,
+      "priority": 39,
+      "elapsed": 361
+    },
+    {
+      "pid": 13,
+      "name": "kworker/u8:1-ev",
+      "arrival": 0,
+      "burst": 1,
+      "priority": 19,
+      "elapsed": 361
+    }
+  ]
+}
