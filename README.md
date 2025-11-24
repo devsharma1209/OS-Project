@@ -41,7 +41,7 @@ It operates in two distinct modes:
 1.  **Clone the Repository:**
 
     ```bash
-    git clone <your-repo-url>
+    git clone https://github.com/devsharma1209/OS-Project.git
     cd OS-Project
     ```
 
