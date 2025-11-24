@@ -2,7 +2,6 @@
 import subprocess
 import sys
 import os
-import random
 
 def fetch_linux_processes(top_n=10):
     """
@@ -10,8 +9,8 @@ def fetch_linux_processes(top_n=10):
     Returns MOCK data if on Windows (so you can test code logic).
     """
     if os.name == 'nt': # Windows check
-        print("⚠️  Windows detected: Generating MOCK Linux data for testing...")
-        return _generate_mock_data(top_n)
+        print("❌ Error: Live Mode requires a Linux environment (WSL, Ubuntu, EC2, etc).")
+        return []
         
     # LINUX COMMAND:
     # ps -eo pid,comm,pri,etimes,time --sort=-%cpu
@@ -59,18 +58,3 @@ def fetch_linux_processes(top_n=10):
     except Exception as e:
         print(f"Error fetching Linux processes: {e}")
         return []
-
-def _generate_mock_data(n):
-    data = []
-    for i in range(n):
-        burst = random.randint(1, 20)
-        elapsed = burst + random.randint(0, 50) # Simulate wait
-        data.append({
-            'pid': 1000 + i,
-            'name': f"mock_proc_{i}",
-            'arrival': 0,
-            'burst': burst,
-            'priority': random.randint(1, 40),
-            'elapsed': elapsed
-        })
-    return data
