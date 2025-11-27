@@ -96,10 +96,10 @@ Live mode:
 
 ---
 
-## **3️⃣ Bridge Mode (Replay the Live Snapshot)**  
-Visualize and analyze real Linux processes using algorithms:
+## **3️⃣ Replay Analysis (The "Bridge" Workflow)** Analyze the captured Live Snapshot using scientific algorithms:
 
 ```bash
+# We use scientific mode, but point it to the live snapshot file
 python3 main.py --mode scientific --workload live_snapshot.json
 ```
 
@@ -133,40 +133,42 @@ python3 main.py --mode scientific --workload live_snapshot.json
 ### **1. Convoy Effect (Simulated)**
 *Demonstrated using `dataset_B_convoy.json`*
 
-| Metric | FCFS | SJF | Improvement |
-|-------|------|------|-------------|
-| Avg Waiting Time | High (Convoy) | Low | **3.7× faster** |
-| Responsiveness | Poor | Excellent | SJF clears short jobs first |
+| Metric | FCFS | SRTF (Preemptive) | Improvement |
+|-------|------|-------------------|-------------|
+| Avg Waiting Time | ~82s (High) | ~25s (Low) | **~3.2× faster** |
+| Responsiveness | Poor | Excellent | SRTF preempts the CPU hog |
 
-The Gantt charts clearly show short processes trapped behind CPU hogs (high burst) under FCFS, proving the theoretical "Convoy Effect."
+*Note: Standard SJF (Non-Preemptive) fails to fix the convoy effect here because the heavy process arrives first (t=0).*
 
 ---
 
 ### **2. Reality Check (Live Linux Analysis)**
 
-We compared the **Single-Core Round Robin Simulation** against **Actual Linux Scheduling**.
+Comparison of **Single-Core Simulation** vs **Actual Linux Scheduling**.
 
 | Process Name | Sim Wait (RR) | Actual Wait | Diff | Insight |
 |:-------------|:-------------:|:-----------:|:----:|:--------|
-| **systemd** | 18.00s        | 1359.00s    | <span style="color:red">+1341s</span> | **I/O Bound:** Process spent 99% of time sleeping (waiting for events), not CPU. |
-| **yes** | 45.00s        | 10.00s      | <span style="color:green">-35s</span> | **Multi-Core:** Linux ran these in parallel on multiple vCPUs. The sim (single-core) forced them to queue. |
+| **systemd** | 18.00s        | 1359.00s    | 🔴 +1341s | **I/O Bound:** Process spent 99% of time sleeping, not waiting for CPU. |
+| **yes** | 45.00s        | 10.00s      | 🟢 -35s | **Multi-Core:** Linux ran these in parallel. The sim forced them to queue. |
 
 **Key Takeaways:**
-1.  **I/O Blocking:** Classical algorithms assume processes are always "Ready." In Linux, processes spend massive amounts of time in "Sleep" states, which looks like "Wait Time" in naive calculations.
-2.  **Parallelism:** A single-core simulator overestimates wait times for CPU-intensive tasks because it cannot account for multi-core execution.
+1.  **Throughput vs. Latency:** Real Linux schedulers optimize for throughput using multiple cores, which simple simulators cannot replicate.
+2.  **I/O Blocking:** Real wait times are inflated by "Sleep" states that simulated CPU bursts ignore.
 
 ---
 
 ### **3. Algorithm Recommender**
-For the captured live snapshot (mixed workload of heavy `yes` commands and light system daemons):
+For the captured live snapshot (mixed workload):
 
 | Algorithm | Avg Turnaround Time | Notes |
 |-----------|---------------------|-------|
-| FCFS      | 53.40s              | choked on `yes` processes |
-| **SJF** | **16.70s** | **Best Performer** (Cleared small daemons first) |
+| FCFS      | 53.40s              | Struggled with large processes |
+| **SJF** | **16.70s** | **Tied for 1st Place** |
+| **SRTF**| **16.70s** | **Tied for 1st Place** |
 | RR (Q=2)  | 27.80s              | Moderate overhead |
 
-**Result:** The system correctly identified **SJF** as the most efficient algorithm for clearing the current system backlog.
+**Recommendation:** While SJF and SRTF tied, **SJF (Non-Preemptive)** is recommended here as it achieves the same efficiency with lower context-switching overhead than SRTF.
+
 ---
 
 # 📂 Project Structure
