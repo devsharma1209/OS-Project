@@ -54,7 +54,7 @@ estimates scheduling states, and runs a “**Reality Check**” comparing:
 ```bash
 git clone https://github.com/devsharma1209/OS-Project.git
 cd OS-Project
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ---
