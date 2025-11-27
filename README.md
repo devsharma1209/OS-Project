@@ -1,7 +1,7 @@
 # ⚡ OS Process Scheduler & Linux Integration Toolkit
 
 ### Operating Systems & Networking Group Project – 2025  
-A hybrid **CPU Scheduling Simulator** + **Linux System Analysis Toolkit** that connects classroom algorithms to real-world Linux behavior.
+A hybrid **CPU Scheduling Simulator** + **Linux System Analysis Toolkit** that bridges classical OS theory with real Linux scheduling behavior.
 
 ![Status](https://img.shields.io/badge/Status-Complete-green)
 ![Python](https://img.shields.io/badge/Python-3.x-blue)
