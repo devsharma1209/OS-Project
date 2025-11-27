@@ -45,7 +45,7 @@ This lets you observe the difference between theory and the real CFS scheduler r
 - SRTF (Preemptive)  
 - Round Robin (quantum=2)  
 - Priority Scheduling (Non-Preemptive)  
-- CFS (Simplified Model Using Virtual Runtime)
+- CFS (Simplified Model)
 
 ### **Advanced System Analysis**
 - Live Linux process capture (pid, CPU time, priority)
@@ -101,19 +101,26 @@ Live mode:
 - Computes real vs simulated wait time
 - Saves snapshot to `workloads/live_snapshot.json`
 - Generates analysis → `results/live_mode_report.txt`
-
+  
 ---
 
-## **3️⃣ Replay Analysis (The "Bridge" Workflow)** Analyze the captured Live Snapshot using scientific algorithms:
+## **3️⃣ Replay Analysis (Bridge Between Theory and Reality)**
+
+Analyze the captured Live Snapshot using scientific algorithms:
 
 ```bash
 # We use scientific mode, but point it to the live snapshot file
 python3 main.py --mode scientific --workload live_snapshot.json
 ```
+This directly compares how classical algorithms would behave on the exact workload that Linux handled.
 
 ---
 
 # 🧪 Stress Test: Reproducing the Convoy Effect
+
+Most Linux processes are I/O bound and have very small CPU bursts.
+
+To generate a meaningful dataset for live analysis, we create a CPU-intensive load.
 
 1. Run CPU-intensive spam processes:
 ```bash
@@ -133,6 +140,8 @@ killall yes
 ```bash
 python3 main.py --mode scientific --workload live_snapshot.json
 ```
+
+This method forces the Linux scheduler to actively divide CPU time, making the comparison between real CFS behavior and classical algorithms much more meaningful.
 
 ---
 
@@ -197,11 +206,8 @@ OS-Project/
 │   └── live_snapshot.json   # Auto-generated
 │
 ├── results/
-│   ├── live_mode_report.txt
-│   └── live_snapshot.png
-│
-├── screenshots/
-│   └── aws_run.png
+│   ├── all Gantt chart images
+│   └── live_mode_report.txt
 │
 ├── requirements.txt
 └── LICENSE
