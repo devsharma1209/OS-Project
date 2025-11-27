@@ -130,29 +130,43 @@ python3 main.py --mode scientific --workload live_snapshot.json
 
 # 📊 Highlighted Results
 
-### **1. Convoy Effect (High Load Scenario)**
+### **1. Convoy Effect (Simulated)**
+*Demonstrated using `dataset_B_convoy.json`*
 
 | Metric | FCFS | SJF | Improvement |
 |-------|------|------|-------------|
-| Avg Waiting Time | 55.10s | 14.70s | **3.7× faster** |
-| Responsiveness | Poor | Excellent | SJF avoids convoy blocking |
+| Avg Waiting Time | High (Convoy) | Low | **3.7× faster** |
+| Responsiveness | Poor | Excellent | SJF clears short jobs first |
 
-The Gantt charts (in `results/`) clearly show short processes trapped behind CPU hogs under FCFS.
+The Gantt charts clearly show short processes trapped behind CPU hogs (high burst) under FCFS, proving the theoretical "Convoy Effect."
 
 ---
 
-### **2. Reality Check (Live Linux Processes)**
+### **2. Reality Check (Live Linux Analysis)**
 
-Example:
+We compared the **Single-Core Round Robin Simulation** against **Actual Linux Scheduling**.
 
-```
-PID      | Sim Wait | Actual Wait | Diff
-1        | 10.00s   | 360.00s     | +350s
-```
+| Process Name | Sim Wait (RR) | Actual Wait | Diff | Insight |
+|:-------------|:-------------:|:-----------:|:----:|:--------|
+| **systemd** | 18.00s        | 1359.00s    | <span style="color:red">+1341s</span> | **I/O Bound:** Process spent 99% of time sleeping (waiting for events), not CPU. |
+| **yes** | 45.00s        | 10.00s      | <span style="color:green">-35s</span> | **Multi-Core:** Linux ran these in parallel on multiple vCPUs. The sim (single-core) forced them to queue. |
 
-**Insight:**  
-Actual Linux wait time is massive because real processes spend most time in the **Blocked/IO** state — something classical schedulers don't simulate.
+**Key Takeaways:**
+1.  **I/O Blocking:** Classical algorithms assume processes are always "Ready." In Linux, processes spend massive amounts of time in "Sleep" states, which looks like "Wait Time" in naive calculations.
+2.  **Parallelism:** A single-core simulator overestimates wait times for CPU-intensive tasks because it cannot account for multi-core execution.
 
+---
+
+### **3. Algorithm Recommender**
+For the captured live snapshot (mixed workload of heavy `yes` commands and light system daemons):
+
+| Algorithm | Avg Turnaround Time | Notes |
+|-----------|---------------------|-------|
+| FCFS      | 53.40s              | choked on `yes` processes |
+| **SJF** | **16.70s** | **Best Performer** (Cleared small daemons first) |
+| RR (Q=2)  | 27.80s              | Moderate overhead |
+
+**Result:** The system correctly identified **SJF** as the most efficient algorithm for clearing the current system backlog.
 ---
 
 # 📂 Project Structure
