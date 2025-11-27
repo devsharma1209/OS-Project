@@ -12,20 +12,28 @@ A hybrid **CPU Scheduling Simulator** + **Linux System Analysis Toolkit** that b
 
 # 📖 Overview
 
-This project implements classical CPU scheduling algorithms and compares them with **actual Linux scheduler behavior (CFS)** using real process snapshots.
+This project implements classical CPU scheduling algorithms and evaluates them against the **actual scheduling behavior of Linux (CFS)**.
+The idea is to show how textbook algorithms behave in perfect, controlled conditions and how real systems behave when processes actually run on the OS.
 
 It operates in two coordinated modes:
 
 ### **🔬 Scientific Mode (Simulated CPU Scheduling)**
-Deterministic algorithm testing on controlled JSON workloads.  
-Includes full metrics, starvation detection, and Gantt chart visualization.
+A deterministic, single-core simulator that runs scheduling algorithms on JSON workloads.
+
+It provides a full set of metrics, starvation warnings and a Gantt chart for every algorithm.
+
+This mode is ideal for studying the convoy effect, starvation, fairness, responsiveness and efficiency under controlled inputs.
+
 
 ### **🐧 Live Mode (Real Linux Integration)**
-Captures live process data from the Linux kernel using `ps`,  
-estimates scheduling states, and runs a “**Reality Check**” comparing:
+A real-time analysis mode that collects active Linux processes using the  `ps` command.
 
-- Simulated wait time (from RR)
+It estimates the process state and compares two things:
+
+- Simulated wait time (from Round Robin as a baseline)
 - Actual Linux wait time (elapsed - CPU time)
+
+This lets you observe the difference between theory and the real CFS scheduler running on a multi-core system.
 
 ---
 
