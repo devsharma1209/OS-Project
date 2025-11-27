@@ -152,7 +152,8 @@ This method forces the Linux scheduler to actively divide CPU time, making the c
 
 | Metric | FCFS | SRTF (Preemptive) | Improvement |
 |-------|------|-------------------|-------------|
-| Avg Waiting Time | ~82s (High) | ~25s (Low) | **~3.2× faster** |
+| Avg Waiting Time | 80.40s (High) | 2.80s (Low) | **~28× Faster** |
+| Avg Response Time | 80.40s | 1.20s | **Immediate** |
 | Responsiveness | Poor | Excellent | SRTF preempts the CPU hog |
 
 *Note: Standard SJF (Non-Preemptive) fails to fix the convoy effect here because the heavy process arrives first (t=0).*
@@ -208,6 +209,9 @@ OS-Project/
 ├── results/
 │   ├── all Gantt chart images
 │   └── live_mode_report.txt
+│
+├── terminal_logs/
+│   └── complete_terminal_output.txt
 │
 ├── requirements.txt
 └── LICENSE
