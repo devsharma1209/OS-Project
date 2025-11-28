@@ -2,7 +2,7 @@ from collections import deque
 import heapq
 
 def fcfs(processes):
-    processes.sort(key=lambda x: x['arrival'])
+    processes.sort(key=lambda x: x['arrival'])        # Sort by arrival time
     time = 0
     timeline = []
     for p in processes:
@@ -17,15 +17,14 @@ def fcfs(processes):
 def sjf(processes):
     # Non-preemptive SJF
     # Sort by arrival first to handle initial stability
-    procs = sorted(processes, key=lambda x: (x['arrival'], x['burst']))
+    procs = sorted(processes, key=lambda x: (x['arrival'], x['burst']))  # Sort initial list
     ready_q = []
     timeline = []
     time = 0
     completed = 0
     n = len(processes)
     
-    # Jump to first arrival if needed
-    if procs: time = procs[0]['arrival']
+    if procs: time = procs[0]['arrival']   # Start at first arrival
     
     while completed < n:
         # Add all processes that have arrived by 'time'
@@ -33,7 +32,7 @@ def sjf(processes):
             # Heap sort by BURST, then ARRIVAL
             heapq.heappush(ready_q, (procs[0]['burst'], procs[0]['arrival'], procs[0]['pid'], procs.pop(0)))
         
-        if ready_q:
+        if ready_q:  # Pick shortest job
             burst, arr, pid, p = heapq.heappop(ready_q)
             start = time
             finish = start + burst
@@ -42,7 +41,7 @@ def sjf(processes):
             completed += 1
         else:
             if procs:
-                time = procs[0]['arrival']
+                time = procs[0]['arrival']  # Idle skip
             else:
                 time += 1
     return timeline
@@ -53,7 +52,7 @@ def srtf(processes):
     ready_q = [] 
     timeline = []
     time = 0
-    remaining = {p['pid']: p['burst'] for p in processes}
+    remaining = {p['pid']: p['burst'] for p in processes}   # Track remaining time
     completed = 0
     n = len(processes)
     
@@ -66,7 +65,7 @@ def srtf(processes):
             heapq.heappush(ready_q, (remaining[p['pid']], p['arrival'], p['pid']))
 
         if ready_q:
-            rem, arr, pid = list(ready_q[0]) # Peek
+            rem, arr, pid = list(ready_q[0]) #Peek smallest remaining
             
             # Run for 1 unit
             start = time
@@ -236,4 +235,5 @@ def cfs_simplified(processes, min_granularity=1):
             if procs: time = procs[0]['arrival']
             else: time += 1
             
+
     return timeline
